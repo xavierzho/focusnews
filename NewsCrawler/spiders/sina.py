@@ -5,7 +5,7 @@ import time
 import json
 import requests
 
-from ..items import SinaNewsCrawlerItem
+from ..items import NewsItem
 
 
 class SinaSpider(scrapy.Spider):
@@ -17,7 +17,7 @@ class SinaSpider(scrapy.Spider):
     start_urls = [base_url % {'page': 1, 'time_stamp': str(time.time()).replace('.', '')[:-4]}]
 
     def parse(self, response):
-        item = SinaNewsCrawlerItem()
+        item = NewsItem()
         data = json.loads(response.text)
         data_list = data['result']['data']['feed']['list']
         for i in data_list:
@@ -31,14 +31,14 @@ class SinaSpider(scrapy.Spider):
             else:
                 item['content'] = i['rich_text'].strip()
                 item['title'] = None
-            item['source_link'] = i['docurl']
+            item['link'] = i['docurl']
             item['published'] = i['update_time']
             item['nav_name'] = [tag['name'] for tag in i['tag']]
             media = i['multimedia']
             if media:
-                item['media'] = [requests.get(url).content for url in media['img_url']]
+                item['images'] = [requests.get(url).content for url in media['img_url']]
             else:
-                item['media'] = None
+                item['images'] = None
             yield item
         page_info = data['result']['data']['feed']['page_info']
         next_page = page_info['nextPage']

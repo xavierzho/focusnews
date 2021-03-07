@@ -1,7 +1,7 @@
 import scrapy
 import requests
 import re
-from ..items import CeCrawlerItem
+from ..items import NewsItem
 from urllib.parse import urljoin
 
 
@@ -9,7 +9,7 @@ class CeSpider(scrapy.Spider):
     """中国经济网，脱贫攻坚、时政社会、金融证券、产业市场"""
     name = 'ce'
     allowed_domains = ['ce.cn']
-    item = CeCrawlerItem()
+    item = NewsItem()
 
     def start_requests(self):
         start_urls = ['http://tuopin.ce.cn/news/',
@@ -30,7 +30,7 @@ class CeSpider(scrapy.Spider):
     def parse(self, response):
         item = response.meta.get('item')
         item['content'] = []
-        item['img'] = []
+        item['images'] = []
         item['source'] = response.xpath('//span[@id="articleSource"]/text()').extract_first()
         item['published'] = response.xpath('//span[@id="articleTime"]/text()').extract_first()
         p_list = response.xpath('//div[@class="TRS_Editor"]/p')
@@ -40,7 +40,7 @@ class CeSpider(scrapy.Spider):
                 img_link = p_img.xpath('./@src').extract_first()
                 item['content'].append(img_link)
                 img_content = requests.get(img_link).content
-                item['img'].append(img_content)
+                item['images'].append(img_content)
             else:
                 text = p.xpath('./text()').extract_first()
                 if text:
@@ -56,13 +56,13 @@ class CeSpider(scrapy.Spider):
         for li in li_list:
             self.item['title'] = li.xpath('./a/text()').extract_first()
             if self.item['title']:
-                self.item['title_link'] = urljoin(response.url, li.xpath('./a/@href').extract_first())
+                self.item['link'] = urljoin(response.url, li.xpath('./a/@href').extract_first())
                 published = li.xpath('./span/text()').extract_first()
                 if published:
                     self.item['published'] = published.strip('[]')
-                if self.item['title_link']:
+                if self.item['link']:
                     if self.item:
-                        yield scrapy.Request(self.item['title_link'], callback=self.parse, meta={'item': self.item})
+                        yield scrapy.Request(self.item['link'], callback=self.parse, meta={'item': self.item})
         base_url = 'http://tuopin.ce.cn/news/index_%s.shtml'
         page_func = response.xpath('//script').re('createPageHTML\(\d+,.*\)')[0]
         page = re.findall('/d+', page_func)
@@ -77,14 +77,14 @@ class CeSpider(scrapy.Spider):
         for li in li_list:
             self.item['title'] = li.xpath('./span[@class="f1"]/a/text()').extract_first()
             if self.item['title']:
-                self.item['title_link'] = urljoin(response.url,
-                                                  li.xpath('./span[@class="f1"]/a/@href').extract_first())
+                self.item['link'] = urljoin(response.url,
+                                            li.xpath('./span[@class="f1"]/a/@href').extract_first())
                 published = li.xpath('./span[@class="f2"]/text()').extract_first()
                 if published:
                     self.item['published'] = published
-                if self.item['title_link']:
+                if self.item['link']:
                     if self.item:
-                        yield scrapy.Request(self.item['title_link'], callback=self.parse, meta={'item': self.item})
+                        yield scrapy.Request(self.item['link'], callback=self.parse, meta={'item': self.item})
         base_url = 'http://www.ce.cn/xwzx/xinwen/jsyw/index_%s.shtml'
         page_func = response.xpath('//script').re('createPageHTML\(\d+,.*\)')[0]
         page = re.findall('/d+', page_func)
@@ -99,13 +99,13 @@ class CeSpider(scrapy.Spider):
         for td in td_list:
             self.item['title'] = td.xpath('./a/text()').extract_first()
             if self.item['title']:
-                self.item['title_link'] = urljoin(response.url, td.xpath('./a/@href').extract_first())
+                self.item['link'] = urljoin(response.url, td.xpath('./a/@href').extract_first())
                 published = td.xpath('./span/text()').extract_first()
                 if published:
                     self.item['published'] = published.strip('[]')
-                if self.item['title_link']:
+                if self.item['link']:
                     if self.item:
-                        yield scrapy.Request(self.item['title_link'], callback=self.parse, meta={'item': self.item})
+                        yield scrapy.Request(self.item['link'], callback=self.parse, meta={'item': self.item})
         base_url = 'http://finance.ce.cn/rolling/index_%s.shtml'
         page_func = response.xpath('//script').re('createPageHTML\(\d+,.*\)')[0]
         page = re.findall('/d+', page_func)
@@ -120,13 +120,13 @@ class CeSpider(scrapy.Spider):
         for li in li_list:
             self.item['title'] = li.xpath('./a/text()').extract_first()
             if self.item['title']:
-                self.item['title_link'] = urljoin(response.url, li.xpath('./a/@href').extract_first())
+                self.item['link'] = urljoin(response.url, li.xpath('./a/@href').extract_first())
                 published = li.xpath('./text()').extract_first()
                 if published:
                     self.item['published'] = published.strip('[]')
-                if self.item['title_link']:
+                if self.item['link']:
                     if self.item:
-                        yield scrapy.Request(self.item['title_link'], callback=self.parse, meta={'item': self.item})
+                        yield scrapy.Request(self.item['link'], callback=self.parse, meta={'item': self.item})
         base_url = 'http://www.ce.cn/cysc/newmain/yc/jsxw/index_%s.shtml'
         page_func = response.xpath('//script').re('createPageHTML\(\d+,.*\)')[0]
         page = re.findall('/d+', page_func)

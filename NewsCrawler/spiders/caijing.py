@@ -3,7 +3,7 @@ import random
 import json
 import requests
 import time
-from ..items import CaiJingCrawlerItem
+from ..items import NewsItem
 
 
 class CaijingSpider(scrapy.Spider):
@@ -15,10 +15,10 @@ class CaijingSpider(scrapy.Spider):
 
         start_urls = f'http://roll.caijing.com.cn/ajax_lists.php?modelid=0&time={random.random()}'
         yield scrapy.Request(start_urls, callback=self.parse,
-                              headers={
-                                  "Referer": "http://roll.caijing.com.cn/",
-                                  "X-Requested-With": " XMLHttpRequest"
-                              })
+                             headers={
+                                 "Referer": "http://roll.caijing.com.cn/",
+                                 "X-Requested-With": " XMLHttpRequest"
+                             })
 
     def parse(self, response):
         """
@@ -26,14 +26,14 @@ class CaijingSpider(scrapy.Spider):
         :param response:
         :return:
         """
-        item = CaiJingCrawlerItem()
+        item = NewsItem()
         data_list = json.loads(response.text)
         for news in data_list:
             item['news_id'] = news['contentid']
             item['nav_name'] = news['cat']
             item['nav_link'] = news['caturl']
             item['title'] = news['title']
-            item['title_link'] = news['url']
+            item['link'] = news['url']
             item['published'] = time.strftime('%Y') + '-' + news['published']
             yield scrapy.Request(item['title_link'], meta={'item': item}, callback=self.parse_detail)
 
@@ -41,7 +41,7 @@ class CaijingSpider(scrapy.Spider):
         item = response.meta['item']
         item['source'] = response.xpath('//span[contains(text(),"来源")]//text()').extract_first()
         item['content'] = []
-        item['img'] = []
+        item['images'] = []
         contents = response.xpath('//div[@class="article-content"]/p')
 
         for content in contents:
@@ -54,6 +54,5 @@ class CaijingSpider(scrapy.Spider):
                 img_url = content.xpath('./img/@src').extract_first()
                 item['content'].append(img_url)
                 b_data = requests.get(img_url, verify=False).content
-                item['img'].append(b_data)
-        print(item)
+                item['images'].append(b_data)
         yield item

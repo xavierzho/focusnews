@@ -1,10 +1,10 @@
 # coding=utf8
 import scrapy
-import random
 import demjson
 import requests
 from NewsCrawler.settings import *
-from ..items import WangYiNewsCrawlerItem
+from ..items import NewsItem
+
 """
 详情页url规则：
 https://money.163.com/20/1207/23/FT9GGE5900259FVR.html
@@ -19,14 +19,14 @@ class WangyiSpider(scrapy.Spider):
     category_map = {0: '产经', 1: '宏观', 2: '股票', 3: '商业', 4: '基金', 5: '理财', 6: '金融'}
 
     def parse(self, response):
-        item = WangYiNewsCrawlerItem()
+        item = NewsItem()
         json_str = response.text.replace('var data=', '').strip()[:-1]
         data = demjson.decode(json_str)
         category_list = data['news']
         for category in category_list:
             for news in category:
-                item['category'] = self.category_map[news['c']]
-                item['title_link'] = news['l']
+                item['nav_name'] = self.category_map[news['c']]
+                item['link'] = news['l']
                 item['title'] = news['t']
                 item['published'] = news['p']
                 yield scrapy.Request(item['title_link'], meta={'item': item}, callback=self.parse_detail)
@@ -34,7 +34,7 @@ class WangyiSpider(scrapy.Spider):
     def parse_detail(self, response):
         item = response.meta['item']
         item['content'] = []
-        item['img'] = []
+        item['images'] = []
         p_list = response.xpath('//div[@class="post_text"]/p')
         item['title'] = response.xpath('//h1/text()').extract_first()
         item['source'] = response.xpath('//div[@class="post_time_source"]/a[1]/text()').extract_first()
@@ -61,7 +61,7 @@ class WangyiSpider(scrapy.Spider):
                 if p_img:
                     img_link = p_img.xpath('./@src').extract_first()
                     img_content = requests.get(img_link).content
-                    item['img'].append(img_content)
+                    item['images'].append(img_content)
                     item['content'].append(img_link)
                 else:
                     text = ''.join(p.xpath('.//text()').extract()).strip()

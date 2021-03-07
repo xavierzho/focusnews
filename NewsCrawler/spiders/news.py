@@ -2,7 +2,7 @@ import scrapy
 import requests
 import time
 import json
-from ..items import NewsCrawlerItem
+from ..items import NewsItem
 from urllib.parse import urljoin
 
 
@@ -22,16 +22,14 @@ class NewsSpider(scrapy.Spider):
                              dont_filter=True)
 
     def parse(self, response):
-        item = NewsCrawlerItem()
+        item = NewsItem()
         li_list = response.xpath('//ul[@class="dataList"]/li')
         for li in li_list:
             item['title'] = li.xpath('./h3/a/text()').extract_first()
             detail_link = li.xpath('./h3/a/@href').extract_first()
 
-            # print(detail_link)
             if detail_link:
-                item['detail_link'] = detail_link
-                # print(detail_link)
+                item['link'] = detail_link
                 yield scrapy.Request(url=detail_link, meta={'item': item}, callback=self.parse_detail)
 
     def parse_detail(self, response):
@@ -45,7 +43,7 @@ class NewsSpider(scrapy.Spider):
 
                 item['source'] = source2.replace('\r\n', '').strip()
         item['published'] = response.xpath('//div[@class="h-info"]/span[1]/text()').extract_first()
-        item['img'] = []
+        item['images'] = []
         item['content'] = []
 
         p_list = response.xpath('//div[@id="p-detail"]/p')
@@ -56,7 +54,7 @@ class NewsSpider(scrapy.Spider):
                 img_src = urljoin(response.url, p_img.xpath('./@src').extract_first())
                 item['content'].append(img_src)
                 img_content = requests.get(img_src).content
-                item['img'].append(img_content)
+                item['images'].append(img_content)
             else:
                 text = p.xpath('.//text()').extract_first()
                 if text:
@@ -64,7 +62,7 @@ class NewsSpider(scrapy.Spider):
         yield item
 
     def parse_central_file(self, response):
-        item = NewsCrawlerItem()
+        item = NewsItem()
         json_str = json.loads(response.text)
 
         data_list = json_str['data']['list']
@@ -74,10 +72,10 @@ class NewsSpider(scrapy.Spider):
             item['title'] = data['Title']
             item['abstract'] = data['Abstract']
             item['source'] = data['SourceName']
-            item['detail_link'] = data['LinkUrl']
+            item['link'] = data['LinkUrl']
             item['keywords'] = data['keyword']
 
-            yield scrapy.Request(url=item['detail_link'], meta={'item': item}, callback=self.parse_file_detail)
+            yield scrapy.Request(url=item['link'], meta={'item': item}, callback=self.parse_file_detail)
         total_news = int(json_str['totalnum'])
         if total_news > 20:
             page = total_news // 20
@@ -89,14 +87,14 @@ class NewsSpider(scrapy.Spider):
 
         p_list = response.xpath('//div[@class="xlcontent"]/p')
         item['content'] = []
-        item['img'] = []
+        item['images'] = []
         for p in p_list:
             p_img = p.xpath('./img')
             if p_img:
                 img_link = urljoin(response.url, p_img.xpath('./@src').extract_first())
                 item['content'].append(img_link)
                 img_content = requests.get(img_link).content
-                item['img'].append(img_content)
+                item['images'].append(img_content)
             elif p.xpath('./strong'):
                 sub = p.xpath('./strong/text()').extract_first()
                 if sub:

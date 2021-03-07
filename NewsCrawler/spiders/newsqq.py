@@ -1,7 +1,7 @@
 import scrapy
 import json
 import requests
-from ..items import NewsQQCrawlerItem
+from ..items import NewsItem
 
 
 class NewsqqSpider(scrapy.Spider):
@@ -12,13 +12,13 @@ class NewsqqSpider(scrapy.Spider):
     start_urls = [base_api]
 
     def parse(self, response):
-        item = NewsQQCrawlerItem()
+        item = NewsItem()
         data_list = json.loads(response.text)['data']['list']
         for data in data_list:
             item['news_id'] = data['article_id']
-            item['category'] = [data['category_cn'], data['sub_category_cn']]
+            item['nav_name'] = [data['category_cn'], data['sub_category_cn']]
             item['title'] = data['title']
-            item['title_link'] = data['url']
+            item['link'] = data['url']
             item['source'] = data['media_name']
             item['published'] = data['publish_time']
             item['title_img'] = data['img']
@@ -28,7 +28,7 @@ class NewsqqSpider(scrapy.Spider):
     def parse_detail(self, response):
         item = response.meta.get('item')
         item['content'] = []
-        item['img'] = []
+        item['images'] = []
         p_list = response.xpath('//div[@class="content-article"]/p')
         for p in p_list:
             p_img = p.xpath('./img')
@@ -36,7 +36,7 @@ class NewsqqSpider(scrapy.Spider):
                 img_link = 'https:' + p_img.xpath('./@src').extract_first()
                 item['content'].append(img_link)
                 img_content = requests.get(img_link).content
-                item['img'].append(img_content)
+                item['images'].append(img_content)
             else:
                 text = p.xpath('./text()').extract_first()
                 if text:

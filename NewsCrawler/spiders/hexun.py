@@ -4,7 +4,7 @@ import demjson
 import requests
 from copy import deepcopy
 from NewsCrawler.utils.hexun_temp_time import temp_time
-from ..items import NewscrawlerItem
+from ..items import NewsItem
 
 
 class HexunSpider(scrapy.Spider):
@@ -22,11 +22,11 @@ class HexunSpider(scrapy.Spider):
         :return:
         """
         # 实例化item对象
-        item = NewscrawlerItem()
+        item = NewsItem()
         data = demjson.decode(response.text)
         news_list = data['list']
-        item['context'] = []
-        item['img'] = []
+        item['content'] = []
+        item['images'] = []
         # 请求详情页
         for news in news_list:
             # print(news)
@@ -58,10 +58,10 @@ class HexunSpider(scrapy.Spider):
             if not content.xpath('./img'):
                 text = content.xpath('.//text()').extract()
                 if text:
-                    item['context'].append(''.join(text))
+                    item['content'].append(''.join(text))
             else:
                 img_url = content.xpath('./img/@src').extract_first()
-                item['context'].append(img_url)
+                item['content'].append(img_url)
                 b_data = requests.get(img_url).content
-                item['img'].append(b_data)
+                item['images'].append(b_data)
         yield item
