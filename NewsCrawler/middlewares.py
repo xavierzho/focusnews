@@ -61,11 +61,13 @@ class NewscrawlerDownloaderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
+    def __init__(self, delay):
+        self.delay = delay
 
     @classmethod
     def from_crawler(cls, crawler):
-        # This method is used by Scrapy to create your spiders.
-        s = cls()
+        random_delay = random.choice([1, 2, 3, 4, 5])
+        s = cls(delay=random_delay)
         crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
         return s
 

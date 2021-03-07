@@ -67,5 +67,4 @@ class WangyiSpider(scrapy.Spider):
                     text = ''.join(p.xpath('.//text()').extract()).strip()
                     if text:
                         item['content'].append(text.replace('\n', '').replace('\r', ''))
-
         yield item

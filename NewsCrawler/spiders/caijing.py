@@ -10,7 +10,15 @@ class CaijingSpider(scrapy.Spider):
     """需要定时刷新"""
     name = 'caijing'
     allowed_domains = ['caijing.com.cn']
-    start_urls = [f'http://roll.caijing.com.cn/ajax_lists.php?modelid=0&time={random.random()}']
+
+    def start_requests(self):
+
+        start_urls = f'http://roll.caijing.com.cn/ajax_lists.php?modelid=0&time={random.random()}'
+        yield scrapy.Request(start_urls, callback=self.parse,
+                              headers={
+                                  "Referer": "http://roll.caijing.com.cn/",
+                                  "X-Requested-With": " XMLHttpRequest"
+                              })
 
     def parse(self, response):
         """
@@ -26,7 +34,7 @@ class CaijingSpider(scrapy.Spider):
             item['nav_link'] = news['caturl']
             item['title'] = news['title']
             item['title_link'] = news['url']
-            item['published'] = time.strftime('%Y')+'-'+news['published']
+            item['published'] = time.strftime('%Y') + '-' + news['published']
             yield scrapy.Request(item['title_link'], meta={'item': item}, callback=self.parse_detail)
 
     def parse_detail(self, response):
@@ -45,6 +53,7 @@ class CaijingSpider(scrapy.Spider):
             else:
                 img_url = content.xpath('./img/@src').extract_first()
                 item['content'].append(img_url)
-                b_data = requests.get(img_url).content
+                b_data = requests.get(img_url, verify=False).content
                 item['img'].append(b_data)
+        print(item)
         yield item

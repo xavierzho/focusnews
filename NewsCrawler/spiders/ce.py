@@ -111,7 +111,7 @@ class CeSpider(scrapy.Spider):
         page = re.findall('/d+', page_func)
         if page:
             page = page[0]
-        for i in range(1, int(page)):
+        for i in range(1, page):
             yield scrapy.Request(base_url % i, callback=self.parse_fiance)
 
     def parse_cysc(self, response):
