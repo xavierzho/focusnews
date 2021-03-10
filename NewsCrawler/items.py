@@ -11,5 +11,4 @@ class NewsItem(scrapy.Item):
     news_id = scrapy.Field()
     desc = scrapy.Field()
     nav_link = scrapy.Field()
-    summary = scrapy.Field()
     keywords = scrapy.Field()

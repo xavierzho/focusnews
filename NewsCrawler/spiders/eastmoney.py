@@ -36,7 +36,7 @@ class EastmoneySpider(scrapy.Spider):
     def parse_detail(self, response):
         item = response.meta['item']
         item['source'] = ''.join(response.xpath('//p[@class="em_media"]/text()').extract())
-        item['summary'] = response.xpath('//div[@class="b-review"]/text()').extract_first().strip()
+        item['desc'] = response.xpath('//div[@class="b-review"]/text()').extract_first().strip()
         item['content'] = []
         p_list = response.xpath('//div[@id="ContentBody"]/p[not (@class="em_media" or @class="res-edit")]')
         for p in p_list:

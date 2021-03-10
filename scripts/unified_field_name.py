@@ -3,8 +3,9 @@
 @Created: 2021/3/9
 """
 import pymongo
+from NewsCrawler.settings import MONGO_URL
 
-client = pymongo.MongoClient("mongodb://localhost:27017", maxPoolSize=1024)
+client = pymongo.MongoClient(MONGO_URL, maxPoolSize=1024)
 db = client['news']
 
 
@@ -21,7 +22,7 @@ def ce():
 
 def eastmoney():
     conn = db['eastmoney']
-    conn.update_many({}, {"$rename": {"detail_link": "link"}})
+    conn.update_many({}, {"$rename": {"detail_link": "link", "summary": "desc"}})
 
 
 def hexun():
