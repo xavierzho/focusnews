@@ -1,6 +1,8 @@
 """
 @Author: Jonescyna@gmail.com
 @Created: 2021/3/10
+
+merge into summary collection
 """
 import pymongo
 
