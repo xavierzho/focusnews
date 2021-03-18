@@ -87,7 +87,7 @@ class CeSpider(scrapy.Spider):
 
         li_list = response.xpath('//div[@class="sec_left"]/ul/li')
         for li in li_list:
-            self.item['title'] = li.xpath('./span[@class="f1"]/a/text()').extract_first()
+            self.item['title'] = li.xpath('./span[@class="f1"]/a/text()').extract_first().replace("\n", '').replace(" ", '')
             if self.item['title']:
                 self.item['link'] = urljoin(response.url,
                                             li.xpath('./span[@class="f1"]/a/@href').extract_first())
@@ -108,7 +108,7 @@ class CeSpider(scrapy.Spider):
     def parse_fiance(self, response):
         td_list = response.xpath('//td[@class="font14"]')
         for td in td_list:
-            self.item['title'] = td.xpath('./a/text()').extract_first()
+            self.item['title'] = td.xpath('./a/text()').extract_first().replace("\n", '').replace(" ", '')
             if self.item['title']:
                 self.item['link'] = urljoin(response.url, td.xpath('./a/@href').extract_first())
                 published = td.xpath('./span/text()').extract_first()
@@ -129,7 +129,7 @@ class CeSpider(scrapy.Spider):
 
         li_list = response.xpath('//div[@class="content"]/div/ul/li')
         for li in li_list:
-            self.item['title'] = li.xpath('./a/text()').extract_first()
+            self.item['title'] = li.xpath('./a/text()').extract_first().replace("\n", '').replace(" ", '')
             if self.item['title']:
                 self.item['link'] = urljoin(response.url, li.xpath('./a/@href').extract_first())
                 published = li.xpath('./text()').extract_first()

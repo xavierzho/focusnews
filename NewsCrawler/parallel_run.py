@@ -2,15 +2,14 @@
 @Author: Jonescyna@gmail.com
 @Created: 2020/12/29
 """
-import logging
 from scrapy.cmdline import execute
 from multiprocessing import Pool
 
 spider_list = ['caijing', 'ce', 'eastmoney', 'hexun', 'news', 'newsqq', 'sina', 'wangyi']
 
 
-def run_spider(spider):
-    execute(['scrapy', 'crawl', spider])
+def run_spider(spider_name):
+    execute(['scrapy', 'crawl', spider_name])
 
 
 if __name__ == '__main__':

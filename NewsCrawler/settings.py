@@ -22,7 +22,7 @@ USER_AGENT = random.choice(USER_AGENT_LIST)
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
-# LOG_LEVEL = 'WARNING'
+LOG_LEVEL = 'WARNING'
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 # CONCURRENT_REQUESTS = 32
 
@@ -31,8 +31,8 @@ ROBOTSTXT_OBEY = False
 # See also autothrottle settings and docs
 # DOWNLOAD_DELAY = random.choice([1, 2, 3, 4, 5])
 # The download delay setting will honor only one of:
-# CONCURRENT_REQUESTS_PER_DOMAIN = 16   # 针对域名的并发限制
-# CONCURRENT_REQUESTS_PER_IP = 16  # 针对ip的并发限制
+CONCURRENT_REQUESTS_PER_DOMAIN = 16   # 针对域名的并发限制
+CONCURRENT_REQUESTS_PER_IP = 16  # 针对ip的并发限制
 
 # Disable cookies (enabled by default)
 # COOKIES_ENABLED = False

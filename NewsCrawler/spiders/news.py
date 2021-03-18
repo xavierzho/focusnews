@@ -4,6 +4,7 @@ from time import time
 from json import loads
 from NewsCrawler.items import NewsItem
 from urllib.parse import urljoin
+from NewsCrawler.utils.validate_published import validate_replace
 
 
 class NewsSpider(scrapy.Spider):
@@ -36,18 +37,19 @@ class NewsSpider(scrapy.Spider):
         item = response.meta['item']
         source = response.xpath('//div[@class="source"]/text()|//span[@class="aticle-src"]/text()').extract_first()
         item['source'] = source.strip()
-        item['published'] = response.xpath('//div[@class="h-info"]/span[1]/text()').extract_first()
+        item['published'] = validate_replace(''.join(
+            response.xpath('//div[@class="header-time left"]//text()|//span[@class="h-time"]/text()').extract()).strip())
         item['images'] = []
         item['content'] = []
 
-        p_list = response.xpath('//div[@id="p-detail"]/p')
+        p_list = response.xpath('//div[@id="detail"]/p')
 
         for p in p_list:
             p_img = p.xpath('.//img')
             if p_img:
                 img_src = urljoin(response.url, p_img.xpath('./@src').extract_first())
                 item['content'].append(img_src)
-                img_content = get(img_src).content
+                img_content = get(img_src, verify=False).content
                 item['images'].append(img_content)
             else:
                 text = p.xpath('.//text()').extract_first()
@@ -69,10 +71,10 @@ class NewsSpider(scrapy.Spider):
             item['news_id'] = data['DocID']
             item['published'] = data['PubTime']
             item['title'] = data['Title']
-            item['abstract'] = data['Abstract']
+            item['desc'] = data['Abstract']
             item['source'] = data['SourceName']
             item['link'] = data['LinkUrl']
-            item['keywords'] = data['keyword'].split(",")
+            item['keywords'] = data['keyword']
             item['editor'] = data['Editor']
             yield scrapy.Request(url=item['link'], meta={'item': item}, callback=self.parse_file_detail)
         total_news = int(json_str['totalnum'])

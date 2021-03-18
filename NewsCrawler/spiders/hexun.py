@@ -31,20 +31,18 @@ class HexunSpider(scrapy.Spider):
         item['images'] = []
         # 请求详情页
         for news in news_list:
-            # print(news)
             item['news_id'] = news['id']
             item['nav_name'] = news['columnName']
-            # item['published'] = validate_replace(news['time'])
             item['title'] = news['title']
             item['desc'] = news['desc']
             item['link'] = news['titleLink']
-            # 详情页需要过滤
+            # 详情页过滤
             yield scrapy.Request(item['link'], callback=self.parse_detail, meta={'item': deepcopy(item)})
         page_count = (int(data['sum']) // 30) + 1
         # 翻页请求
         for page in range(2, page_count + 1):
             next_url = self.start_url % {'date': self.current_date, 'page': page, 'temp_time': int(temp_time)}
-            yield scrapy.Request(next_url, callback=self.parse, dont_filter=True)
+            yield scrapy.Request(next_url, callback=self.parse)
 
     def parse_detail(self, response):
         """
