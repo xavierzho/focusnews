@@ -5,6 +5,7 @@ import requests
 from copy import deepcopy
 from NewsCrawler.utils.hexun_temp_time import temp_time
 from ..items import NewsItem
+from ..utils.validate_published import validate_replace
 
 
 class HexunSpider(scrapy.Spider):
@@ -31,13 +32,13 @@ class HexunSpider(scrapy.Spider):
         for news in news_list:
             # print(news)
             item['news_id'] = news['id']
-            item['columnName'] = news['columnName']
-            item['time'] = news['time']
+            item['nav_name'] = news['columnName']
+            # item['published'] = validate_replace(news['time'])
             item['title'] = news['title']
             item['desc'] = news['desc']
-            item['titleLink'] = news['titleLink']
+            item['link'] = news['titleLink']
             # 详情页需要过滤
-            yield scrapy.Request(item['titleLink'], callback=self.parse_detail, meta={'item': deepcopy(item)})
+            yield scrapy.Request(item['link'], callback=self.parse_detail, meta={'item': deepcopy(item)})
         page_count = (int(data['sum']) // 30) + 1
         # 翻页请求
         for page in range(2, page_count + 1):
@@ -51,7 +52,10 @@ class HexunSpider(scrapy.Spider):
         :return:
         """
         item = response.meta['item']
-
+        published = response.xpath('//span[@class="pr20"]/text()').extract_first()
+        item['published'] = validate_replace(published)
+        item['source'] = response.xpath('//div[@class="tip fl"]/a/text()').extract_first()
+        item['source_link'] = response.xpath('//div[@class="tip fl"]/a/@href').extract_first()
         context_box = response.xpath('//div[@class="art_context"]/div[@class="art_contextBox"]/p')
 
         for content in context_box:

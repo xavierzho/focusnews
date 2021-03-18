@@ -6,7 +6,7 @@ import json
 import requests
 
 from ..items import NewsItem
-
+from ..utils.validate_published import validate_replace
 
 class SinaSpider(scrapy.Spider):
     """新浪7*24小时全球实时财经新闻直播"""
@@ -29,10 +29,9 @@ class SinaSpider(scrapy.Spider):
                 item['content'] = pattern2[0][1].strip()
                 item['title'] = pattern2[0][0].strip()
             else:
-                item['content'] = i['rich_text'].strip()
-                item['title'] = None
+                item['title'] = i['rich_text'].strip()
             item['link'] = i['docurl']
-            item['published'] = i['update_time']
+            item['published'] = validate_replace(i['update_time'])
             item['nav_name'] = [tag['name'] for tag in i['tag']]
             media = i['multimedia']
             if media:
@@ -40,6 +39,7 @@ class SinaSpider(scrapy.Spider):
             else:
                 item['images'] = None
             yield item
+        # parse page
         page_info = data['result']['data']['feed']['page_info']
         next_page = page_info['nextPage']
         if not page_info['totalPage'] == page_info['page']:

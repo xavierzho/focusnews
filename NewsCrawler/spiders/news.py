@@ -34,14 +34,8 @@ class NewsSpider(scrapy.Spider):
 
     def parse_detail(self, response):
         item = response.meta['item']
-        source = response.xpath('//div[@class="h-info"]/span[2]/text()').extract_first().replace('\r\n', '').strip()
-        if len(source) > 4:
-            item['source'] = source
-        else:
-            source2 = response.xpath('//em[@id="source"]/text()').extract_first()
-            if source2:
-
-                item['source'] = source2.replace('\r\n', '').strip()
+        source = response.xpath('//div[@class="source"]/text()|//span[@class="aticle-src"]/text()').extract_first()
+        item['source'] = source.strip()
         item['published'] = response.xpath('//div[@class="h-info"]/span[1]/text()').extract_first()
         item['images'] = []
         item['content'] = []
@@ -62,6 +56,11 @@ class NewsSpider(scrapy.Spider):
         yield item
 
     def parse_central_file(self, response):
+        """
+        中央文件频道
+        :param response:
+        :return:
+        """
         item = NewsItem()
         json_str = json.loads(response.text)
 
@@ -73,16 +72,22 @@ class NewsSpider(scrapy.Spider):
             item['abstract'] = data['Abstract']
             item['source'] = data['SourceName']
             item['link'] = data['LinkUrl']
-            item['keywords'] = data['keyword']
-
+            item['keywords'] = data['keyword'].split(",")
+            item['editor'] = data['Editor']
             yield scrapy.Request(url=item['link'], meta={'item': item}, callback=self.parse_file_detail)
         total_news = int(json_str['totalnum'])
         if total_news > 20:
             page = total_news // 20
             for i in range(2, page + 2):
-                yield scrapy.Request(url=self.base_url % {'page': i, 'timestamp': self.timestamp}, callback=self.parse_central_file)
+                yield scrapy.Request(url=self.base_url % {'page': i, 'timestamp': self.timestamp},
+                                     callback=self.parse_central_file)
 
     def parse_file_detail(self, response):
+        """
+        中央文件详情页解析
+        :param response:
+        :return:
+        """
         item = response.meta['item']
 
         p_list = response.xpath('//div[@class="xlcontent"]/p')
@@ -104,4 +109,3 @@ class NewsSpider(scrapy.Spider):
                 if text:
                     item['content'].append(text.strip())
         yield item
-

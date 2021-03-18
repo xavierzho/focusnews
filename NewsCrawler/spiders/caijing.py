@@ -2,8 +2,8 @@ import scrapy
 import random
 import json
 import requests
-import time
 from ..items import NewsItem
+from ..utils.validate_published import validate_replace
 
 
 class CaijingSpider(scrapy.Spider):
@@ -17,8 +17,29 @@ class CaijingSpider(scrapy.Spider):
         yield scrapy.Request(start_urls, callback=self.parse,
                              headers={
                                  "Referer": "http://roll.caijing.com.cn/",
-                                 "X-Requested-With": " XMLHttpRequest"
+                                 # "X-Requested-With": " XMLHttpRequest"
                              })
+
+    def source_handler(self, response) -> str:
+        """
+        来源解析
+        source 的表现形式
+        1.来源：xxxx
+        2. 本文来源于<a>...</a> or span
+        3. .news_frome -- 没有来源前缀
+        :param response:
+        :return:
+        """
+        res = ""
+        source = response.xpath(
+            '//span[@class="source_name"]//text()|'
+            '//span[@id="source_baidu"]//text()|'
+            '//*[@class="news_frome"]//text()').extract()
+        res = res.join([i.strip() for i in source])
+        if res:
+            return res
+        else:
+            return ''.join(response.xpath('//span[contains(text(),"来源")]//text()').extract())
 
     def parse(self, response):
         """
@@ -34,12 +55,21 @@ class CaijingSpider(scrapy.Spider):
             item['nav_link'] = news['caturl']
             item['title'] = news['title']
             item['link'] = news['url']
-            item['published'] = time.strftime('%Y') + '-' + news['published']
-            yield scrapy.Request(item['title_link'], meta={'item': item}, callback=self.parse_detail)
+
+            yield scrapy.Request(item['link'], meta={'item': item}, callback=self.parse_detail)
 
     def parse_detail(self, response):
+        """
+        解析详情页
+        :param response:
+        :return:
+        """
         item = response.meta['item']
-        item['source'] = response.xpath('//span[contains(text(),"来源")]//text()').extract_first()
+        published = response.xpath('//span[@class="news_time"]/text()|'
+                                   '//span[@id="pubtime_baidu"]/text()').extract_first()
+        item['published'] = validate_replace(published)
+        item['source'] = self.source_handler(response)
+        # parse content and images
         item['content'] = []
         item['images'] = []
         contents = response.xpath('//div[@class="article-content"]/p')

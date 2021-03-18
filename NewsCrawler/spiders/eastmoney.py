@@ -1,10 +1,13 @@
 import scrapy
 import random
+import requests
 import time
+import re
 import json
 
 from ..items import NewsItem
 from ..utils.call_nav_map import nav_map
+from ..utils.validate_published import validate_replace
 
 
 class EastmoneySpider(scrapy.Spider):
@@ -27,7 +30,7 @@ class EastmoneySpider(scrapy.Spider):
             item['link'] = data['url_unique']
 
             item['nav_name'] = [nav_map[i] for i in data['column'].split(',') if i in nav_map.keys()]
-            item['published'] = data['showtime']
+            item['published'] = validate_replace(data['showtime'])
             yield scrapy.Request(item['link'], callback=self.parse_detail, meta={'item': item})
         for page in range(2, 21):
             next_url = self.base_url % {'page': 1, 'ran_num': self.ran_num, 'time_stamp': self.time_stamp}
@@ -35,12 +38,21 @@ class EastmoneySpider(scrapy.Spider):
 
     def parse_detail(self, response):
         item = response.meta['item']
-        item['source'] = ''.join(response.xpath('//p[@class="em_media"]/text()').extract())
+        item['source'] = response.xpath('//div[@class="source data-source"]/@data-source').extract_first()
         item['desc'] = response.xpath('//div[@class="b-review"]/text()').extract_first().strip()
         item['content'] = []
-        p_list = response.xpath('//div[@id="ContentBody"]/p[not (@class="em_media" or @class="res-edit")]')
+        item['images'] = []
+        p_list = response.xpath('//div[@id="ContentBody"]/p[not(@class)] | //div[@id="ContentBody"]/center')
         for p in p_list:
-            p_one = ''.join(p.xpath('./text()').extract()).strip()
-            if p_one:
-                item['content'].append(p_one)
+            if p.xpath('.//img'):
+                img_link = p.xpath('.//img/@src').extract_first()
+                # https://dfscdn.dfcfw.com/download/D25618177642896768707.jpg
+                if re.match(r"https://dfscdn\.dfcfw\.com/download/.*", img_link):
+                    item['content'].append(img_link)
+                    img_content = requests.get(img_link).content
+                    item['images'].append(img_content)
+            else:
+                text = ''.join(p.xpath('.//text()').extract())
+                if text:
+                    item['content'].append(text)
         yield item

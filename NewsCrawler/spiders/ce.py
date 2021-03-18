@@ -3,6 +3,7 @@ import requests
 import re
 from ..items import NewsItem
 from urllib.parse import urljoin
+from ..utils.validate_published import validate_replace
 
 
 class CeSpider(scrapy.Spider):
@@ -28,12 +29,23 @@ class CeSpider(scrapy.Spider):
                 yield scrapy.Request(i, callback=self.parse_cysc, dont_filter=True)
 
     def parse(self, response):
+        """
+        详情页解析
+        :param response:
+        :return:
+        """
         item = response.meta.get('item')
         item['content'] = []
         item['images'] = []
-        item['source'] = response.xpath('//span[@id="articleSource"]/text()').extract_first()
-        item['published'] = response.xpath('//span[@id="articleTime"]/text()').extract_first()
-        p_list = response.xpath('//div[@class="TRS_Editor"]/p')
+        item['title'] = item['title'].replace("\n", '').replace(" ", '')
+        source = response.xpath('//span[@id="articleSource"]/text()').extract_first()
+        item['source'] = source.replace("\n", '').replace(" ", '')
+        item['published'] = validate_replace(response.xpath('//span[@id="articleTime"]/text()')
+                                             .extract_first()
+                                             .replace("年", "-")
+                                             .replace("月", "-")
+                                             .replace("日", ""))
+        p_list = response.xpath('//div[@class="TRS_Editor"]//p')
         for p in p_list:
             p_img = p.xpath('./img')
             if p_img:
@@ -42,7 +54,7 @@ class CeSpider(scrapy.Spider):
                 img_content = requests.get(img_link).content
                 item['images'].append(img_content)
             else:
-                text = p.xpath('./text()').extract_first()
+                text = p.xpath('.//text()').extract_first()
                 if text:
                     text = text.strip('\u3000')
                     if text:
@@ -59,12 +71,12 @@ class CeSpider(scrapy.Spider):
                 self.item['link'] = urljoin(response.url, li.xpath('./a/@href').extract_first())
                 published = li.xpath('./span/text()').extract_first()
                 if published:
-                    self.item['published'] = published.strip('[]')
+                    self.item['published'] = validate_replace(published.strip('[]'))
                 if self.item['link']:
                     if self.item:
                         yield scrapy.Request(self.item['link'], callback=self.parse, meta={'item': self.item})
         base_url = 'http://tuopin.ce.cn/news/index_%s.shtml'
-        page_func = response.xpath('//script').re('createPageHTML\(\d+,.*\)')[0]
+        page_func = response.xpath('//script').re(r'createPageHTML\(\d+,.*\)')[0]
         page = re.findall('/d+', page_func)
         if page:
             page = page[0]
@@ -81,12 +93,12 @@ class CeSpider(scrapy.Spider):
                                             li.xpath('./span[@class="f1"]/a/@href').extract_first())
                 published = li.xpath('./span[@class="f2"]/text()').extract_first()
                 if published:
-                    self.item['published'] = published
+                    self.item['published'] = validate_replace(published)
                 if self.item['link']:
                     if self.item:
                         yield scrapy.Request(self.item['link'], callback=self.parse, meta={'item': self.item})
         base_url = 'http://www.ce.cn/xwzx/xinwen/jsyw/index_%s.shtml'
-        page_func = response.xpath('//script').re('createPageHTML\(\d+,.*\)')[0]
+        page_func = response.xpath('//script').re(r'createPageHTML\(\d+,.*\)')[0]
         page = re.findall('/d+', page_func)
         if page:
             page = page[0]
@@ -94,7 +106,6 @@ class CeSpider(scrapy.Spider):
             yield scrapy.Request(base_url % i, callback=self.parse_jsyw)
 
     def parse_fiance(self, response):
-
         td_list = response.xpath('//td[@class="font14"]')
         for td in td_list:
             self.item['title'] = td.xpath('./a/text()').extract_first()
@@ -107,7 +118,7 @@ class CeSpider(scrapy.Spider):
                     if self.item:
                         yield scrapy.Request(self.item['link'], callback=self.parse, meta={'item': self.item})
         base_url = 'http://finance.ce.cn/rolling/index_%s.shtml'
-        page_func = response.xpath('//script').re('createPageHTML\(\d+,.*\)')[0]
+        page_func = response.xpath('//script').re(r'createPageHTML\(\d+,.*\)')[0]
         page = re.findall('/d+', page_func)
         if page:
             page = page[0]
@@ -123,12 +134,12 @@ class CeSpider(scrapy.Spider):
                 self.item['link'] = urljoin(response.url, li.xpath('./a/@href').extract_first())
                 published = li.xpath('./text()').extract_first()
                 if published:
-                    self.item['published'] = published.strip('[]')
+                    self.item['published'] = validate_replace(published.strip('[]'))
                 if self.item['link']:
                     if self.item:
                         yield scrapy.Request(self.item['link'], callback=self.parse, meta={'item': self.item})
         base_url = 'http://www.ce.cn/cysc/newmain/yc/jsxw/index_%s.shtml'
-        page_func = response.xpath('//script').re('createPageHTML\(\d+,.*\)')[0]
+        page_func = response.xpath('//script').re(r'createPageHTML\(\d+,.*\)')[0]
         page = re.findall('/d+', page_func)
         if page:
             page = page[0]

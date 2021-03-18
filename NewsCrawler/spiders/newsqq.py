@@ -2,6 +2,7 @@ import scrapy
 import json
 import requests
 from ..items import NewsItem
+from ..utils.validate_published import validate_replace
 
 
 class NewsqqSpider(scrapy.Spider):
@@ -19,14 +20,16 @@ class NewsqqSpider(scrapy.Spider):
             item['nav_name'] = [data['category_cn'], data['sub_category_cn']]
             item['title'] = data['title']
             item['link'] = data['url']
-            item['source'] = data['media_name']
-            item['published'] = data['publish_time']
-            item['title_img'] = data['img']
+            item['editor'] = data['media_name']
+            item['published'] = validate_replace(data['publish_time'])
+            item['images'] = data['img']
             item['keywords'] = [i['tag_word'] for i in data['tags']]
-            yield scrapy.Request(item['title_link'], meta={'item': item}, callback=self.parse_detail)
+            yield scrapy.Request(item['link'], meta={'item': item}, callback=self.parse_detail)
 
     def parse_detail(self, response):
         item = response.meta.get('item')
+        item['source'] = response.xpath('//a[@class="author"]/span/text()').extract_first()
+        item['source_link'] = response.xpath('//a[@class="author"]/@href').extract_first()
         item['content'] = []
         item['images'] = []
         p_list = response.xpath('//div[@class="content-article"]/p')

@@ -99,4 +99,4 @@ MONGO_DB = 'news'
 DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 SCHEDULER = 'scrapy_redis.scheduler.Scheduler'
 SCHEDULER_PERSIST = True
-REDIS_URL = 'redis://127.0.0.1:6379/2'
+REDIS_URL = 'redis://redis:jones1997@127.0.0.1:6379/2'

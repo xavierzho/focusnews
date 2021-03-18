@@ -67,5 +67,5 @@ if __name__ == '__main__':
     for i in coll_list:
         print("开启清理:", i)
         clean_string_space(i)
-        published_complete(i)
+        # published_complete(i)
         print(i, ":清理结束")
