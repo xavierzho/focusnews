@@ -1,9 +1,9 @@
 import scrapy
-import requests
-import re
-from ..items import NewsItem
+from requests import get
+from re import findall
 from urllib.parse import urljoin
-from ..utils.validate_published import validate_replace
+from NewsCrawler.items import NewsItem
+from NewsCrawler.utils.validate_published import validate_replace
 
 
 class CeSpider(scrapy.Spider):
@@ -51,7 +51,7 @@ class CeSpider(scrapy.Spider):
             if p_img:
                 img_link = p_img.xpath('./@src').extract_first()
                 item['content'].append(img_link)
-                img_content = requests.get(img_link).content
+                img_content = get(img_link).content
                 item['images'].append(img_content)
             else:
                 text = p.xpath('.//text()').extract_first()
@@ -77,7 +77,7 @@ class CeSpider(scrapy.Spider):
                         yield scrapy.Request(self.item['link'], callback=self.parse, meta={'item': self.item})
         base_url = 'http://tuopin.ce.cn/news/index_%s.shtml'
         page_func = response.xpath('//script').re(r'createPageHTML\(\d+,.*\)')[0]
-        page = re.findall('/d+', page_func)
+        page = findall('/d+', page_func)
         if page:
             page = page[0]
         for i in range(1, int(page)):
@@ -99,7 +99,7 @@ class CeSpider(scrapy.Spider):
                         yield scrapy.Request(self.item['link'], callback=self.parse, meta={'item': self.item})
         base_url = 'http://www.ce.cn/xwzx/xinwen/jsyw/index_%s.shtml'
         page_func = response.xpath('//script').re(r'createPageHTML\(\d+,.*\)')[0]
-        page = re.findall('/d+', page_func)
+        page = findall('/d+', page_func)
         if page:
             page = page[0]
         for i in range(1, int(page)):
@@ -119,7 +119,7 @@ class CeSpider(scrapy.Spider):
                         yield scrapy.Request(self.item['link'], callback=self.parse, meta={'item': self.item})
         base_url = 'http://finance.ce.cn/rolling/index_%s.shtml'
         page_func = response.xpath('//script').re(r'createPageHTML\(\d+,.*\)')[0]
-        page = re.findall('/d+', page_func)
+        page = findall('/d+', page_func)
         if page:
             page = page[0]
         for i in range(1, page):
@@ -140,7 +140,7 @@ class CeSpider(scrapy.Spider):
                         yield scrapy.Request(self.item['link'], callback=self.parse, meta={'item': self.item})
         base_url = 'http://www.ce.cn/cysc/newmain/yc/jsxw/index_%s.shtml'
         page_func = response.xpath('//script').re(r'createPageHTML\(\d+,.*\)')[0]
-        page = re.findall('/d+', page_func)
+        page = findall('/d+', page_func)
         if page:
             page = page[0]
         for i in range(1, int(page)):

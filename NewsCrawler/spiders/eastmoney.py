@@ -1,13 +1,13 @@
 import scrapy
-import random
-import requests
-import time
-import re
-import json
+from random import random
+from requests import get
+from time import time
+from re import match
+from json import loads
 
-from ..items import NewsItem
-from ..utils.call_nav_map import nav_map
-from ..utils.validate_published import validate_replace
+from NewsCrawler.items import NewsItem
+from NewsCrawler.utils.call_nav_map import nav_map
+from NewsCrawler.utils.validate_published import validate_replace
 
 
 class EastmoneySpider(scrapy.Spider):
@@ -15,15 +15,15 @@ class EastmoneySpider(scrapy.Spider):
     name = 'eastmoney'
     allowed_domains = ['eastmoney.com']
     base_url = 'https://newsapi.eastmoney.com/kuaixun/v1/getlist_102_ajaxResult_50_%(page)s_.html?r=%(ran_num)s&_=%(time_stamp)s'
-    time_stamp = str(time.time()).replace('.', '')[:-4]
-    ran_num = random.random()
+    time_stamp = str(time()).replace('.', '')[:-4]
+    ran_num = random()
     start_urls = [base_url % {'page': 1, 'ran_num': ran_num, 'time_stamp': time_stamp}]
 
     def parse(self, response):
         """解析出详情页的url，并实现翻页"""
         item = NewsItem()
         ajax_data = response.text.replace('var ajaxResult=', '')
-        data_list = json.loads(ajax_data)['LivesList']
+        data_list = loads(ajax_data)['LivesList']
         for data in data_list:
             item['news_id'] = data['newsid']
             item['title'] = data['title']
@@ -47,12 +47,12 @@ class EastmoneySpider(scrapy.Spider):
             if p.xpath('.//img'):
                 img_link = p.xpath('.//img/@src').extract_first()
                 # https://dfscdn.dfcfw.com/download/D25618177642896768707.jpg
-                if re.match(r"https://dfscdn\.dfcfw\.com/download/.*", img_link):
+                if match(r"https://dfscdn\.dfcfw\.com/download/.*", img_link):
                     item['content'].append(img_link)
-                    img_content = requests.get(img_link).content
+                    img_content = get(img_link).content
                     item['images'].append(img_content)
             else:
-                text = ''.join(p.xpath('.//text()').extract())
+                text = ''.join(p.xpath('.//text()').extract()).strip()
                 if text:
                     item['content'].append(text)
         yield item

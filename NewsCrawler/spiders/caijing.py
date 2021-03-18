@@ -1,9 +1,9 @@
 import scrapy
-import random
-import json
-import requests
-from ..items import NewsItem
-from ..utils.validate_published import validate_replace
+from random import random
+from json import loads
+from requests import get
+from NewsCrawler.items import NewsItem
+from NewsCrawler.utils.validate_published import validate_replace
 
 
 class CaijingSpider(scrapy.Spider):
@@ -13,7 +13,7 @@ class CaijingSpider(scrapy.Spider):
 
     def start_requests(self):
 
-        start_urls = f'http://roll.caijing.com.cn/ajax_lists.php?modelid=0&time={random.random()}'
+        start_urls = f'http://roll.caijing.com.cn/ajax_lists.php?modelid=0&time={random()}'
         yield scrapy.Request(start_urls, callback=self.parse,
                              headers={
                                  "Referer": "http://roll.caijing.com.cn/",
@@ -48,7 +48,7 @@ class CaijingSpider(scrapy.Spider):
         :return:
         """
         item = NewsItem()
-        data_list = json.loads(response.text)
+        data_list = loads(response.text)
         for news in data_list:
             item['news_id'] = news['contentid']
             item['nav_name'] = news['cat']
@@ -76,13 +76,12 @@ class CaijingSpider(scrapy.Spider):
 
         for content in contents:
             if not content.xpath('./img'):
-                text = content.xpath('.//text()').extract_first()
-
+                text = ''.join(content.xpath('.//text()').extract()).strip()
                 if text:
                     item['content'].append(text)
             else:
                 img_url = content.xpath('./img/@src').extract_first()
                 item['content'].append(img_url)
-                b_data = requests.get(img_url, verify=False).content
+                b_data = get(img_url, verify=False).content
                 item['images'].append(b_data)
         yield item

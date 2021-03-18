@@ -1,15 +1,15 @@
 import scrapy
-import requests
-import time
-import json
-from ..items import NewsItem
+from requests import get
+from time import time
+from json import loads
+from NewsCrawler.items import NewsItem
 from urllib.parse import urljoin
 
 
 class NewsSpider(scrapy.Spider):
     """新华网财经频道"""
     name = 'news'
-    timestamp = str(time.time()).replace('.', '')[:-4]
+    timestamp = str(time()).replace('.', '')[:-4]
     base_url = 'http://da.wa.news.cn/nodeart/page?nid=11214126&pgnum=%(page)s&cnt=20&attr=&tp=1&orderby=1&_=%(timestamp)s'
 
     def start_requests(self):
@@ -47,7 +47,7 @@ class NewsSpider(scrapy.Spider):
             if p_img:
                 img_src = urljoin(response.url, p_img.xpath('./@src').extract_first())
                 item['content'].append(img_src)
-                img_content = requests.get(img_src).content
+                img_content = get(img_src).content
                 item['images'].append(img_content)
             else:
                 text = p.xpath('.//text()').extract_first()
@@ -62,7 +62,7 @@ class NewsSpider(scrapy.Spider):
         :return:
         """
         item = NewsItem()
-        json_str = json.loads(response.text)
+        json_str = loads(response.text)
 
         data_list = json_str['data']['list']
         for data in data_list:
@@ -98,7 +98,7 @@ class NewsSpider(scrapy.Spider):
             if p_img:
                 img_link = urljoin(response.url, p_img.xpath('./@src').extract_first())
                 item['content'].append(img_link)
-                img_content = requests.get(img_link).content
+                img_content = get(img_link).content
                 item['images'].append(img_content)
             elif p.xpath('./strong'):
                 sub = p.xpath('./strong/text()').extract_first()

@@ -1,11 +1,12 @@
 import scrapy
-import time
-import demjson
-import requests
+from time import strftime
+from demjson import decode
+from requests import get
 from copy import deepcopy
+
+from NewsCrawler.items import NewsItem
 from NewsCrawler.utils.hexun_temp_time import temp_time
-from ..items import NewsItem
-from ..utils.validate_published import validate_replace
+from NewsCrawler.utils.validate_published import validate_replace
 
 
 class HexunSpider(scrapy.Spider):
@@ -13,7 +14,7 @@ class HexunSpider(scrapy.Spider):
     name = 'hexun'
     allowed_domains = ['hexun.com']
     start_url = 'http://roll.hexun.com/roolNews_listRool.action?type=all&ids=100,101,103,125,105,124,162,194,108,122,121,119,107,116,114,115,182,120,169,170,177,180,118,190,200,155,130,117,153,106&date=%(date)s&page=%(page)s&tempTime=%(temp_time)s'
-    current_date = time.strftime("%Y-%m-%d")
+    current_date = strftime("%Y-%m-%d")
     start_urls = [start_url % {'date': current_date, 'page': 1, 'temp_time': int(temp_time)}]
 
     def parse(self, response):
@@ -24,7 +25,7 @@ class HexunSpider(scrapy.Spider):
         """
         # 实例化item对象
         item = NewsItem()
-        data = demjson.decode(response.text)
+        data = decode(response.text)
         news_list = data['list']
         item['content'] = []
         item['images'] = []
@@ -66,6 +67,6 @@ class HexunSpider(scrapy.Spider):
             else:
                 img_url = content.xpath('./img/@src').extract_first()
                 item['content'].append(img_url)
-                b_data = requests.get(img_url).content
+                b_data = get(img_url).content
                 item['images'].append(b_data)
         yield item
