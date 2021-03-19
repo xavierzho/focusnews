@@ -53,8 +53,14 @@ class HexunSpider(scrapy.Spider):
         item = response.meta['item']
         published = response.xpath('//span[@class="pr20"]/text()').extract_first()
         item['published'] = validate_replace(published)
-        item['source'] = response.xpath('//div[@class="tip fl"]/a/text()').extract_first()
-        item['source_link'] = response.xpath('//div[@class="tip fl"]/a/@href').extract_first()
+        source = response.xpath('//div[@class="tip fl"]/a/text()').extract_first()
+        if source:
+            item['source'] = source
+            item['source_link'] = response.xpath('//div[@class="tip fl"]/a/@href').extract_first()
+        else:
+            source, editor = ''.join(response.xpath('//div[@class="tip fl"]/text()').extract()).split()
+            item['source'] = source
+            item['editor'] = editor
         context_box = response.xpath('//div[@class="art_context"]/div[@class="art_contextBox"]/p')
 
         for content in context_box:
