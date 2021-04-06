@@ -1,9 +1,11 @@
+from json import loads
+from time import time
+from urllib.parse import urljoin
+
 import scrapy
 from requests import get
-from time import time
-from json import loads
+
 from NewsCrawler.items import NewsItem
-from urllib.parse import urljoin
 from NewsCrawler.utils.validate_published import validate_replace
 
 
@@ -38,7 +40,8 @@ class NewsSpider(scrapy.Spider):
         source = response.xpath('//div[@class="source"]/text()|//span[@class="aticle-src"]/text()').extract_first()
         item['source'] = source.strip()
         item['published'] = validate_replace(''.join(
-            response.xpath('//div[@class="header-time left"]//text()|//span[@class="h-time"]/text()').extract()).strip())
+            response.xpath(
+                '//div[@class="header-time left"]//text()|//span[@class="h-time"]/text()').extract()).strip())
         item['images'] = []
         item['content'] = []
 

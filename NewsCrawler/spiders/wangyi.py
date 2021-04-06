@@ -1,10 +1,12 @@
 # coding=utf8
-import scrapy
 import demjson
 import requests
+import scrapy
+
 from NewsCrawler.settings import *
 from ..items import NewsItem
 from ..utils.validate_published import validate_replace
+
 """
 详情页url规则：
 https://money.163.com/20/1207/23/FT9GGE5900259FVR.html

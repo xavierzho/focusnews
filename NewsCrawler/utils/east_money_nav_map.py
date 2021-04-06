@@ -1,7 +1,8 @@
-import requests
 import json
-from lxml import etree
 from urllib.parse import urljoin
+
+import requests
+from lxml import etree
 
 base_url = 'https://kuaixun.eastmoney.com/'
 headers = {
@@ -34,5 +35,3 @@ def parse_nav():
 
 if __name__ == '__main__':
     parse_nav()
-
-

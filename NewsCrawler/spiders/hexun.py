@@ -1,8 +1,9 @@
-import scrapy
+from copy import deepcopy
 from time import strftime
+
+import scrapy
 from demjson import decode
 from requests import get
-from copy import deepcopy
 
 from NewsCrawler.items import NewsItem
 from NewsCrawler.utils.hexun_temp_time import temp_time

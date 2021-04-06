@@ -3,6 +3,7 @@
 @Created: 2021/3/9
 """
 import pymongo
+
 from NewsCrawler.settings import MONGO_URL
 
 client = pymongo.MongoClient(MONGO_URL, maxPoolSize=1024)

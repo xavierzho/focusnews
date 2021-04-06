@@ -1,7 +1,9 @@
-import scrapy
-from requests import get
 from re import findall
 from urllib.parse import urljoin
+
+import scrapy
+from requests import get
+
 from NewsCrawler.items import NewsItem
 from NewsCrawler.utils.validate_published import validate_replace
 
@@ -87,7 +89,8 @@ class CeSpider(scrapy.Spider):
 
         li_list = response.xpath('//div[@class="sec_left"]/ul/li')
         for li in li_list:
-            self.item['title'] = li.xpath('./span[@class="f1"]/a/text()').extract_first().replace("\n", '').replace(" ", '')
+            self.item['title'] = li.xpath('./span[@class="f1"]/a/text()').extract_first().replace("\n", '').replace(" ",
+                                                                                                                    '')
             if self.item['title']:
                 self.item['link'] = urljoin(response.url,
                                             li.xpath('./span[@class="f1"]/a/@href').extract_first())

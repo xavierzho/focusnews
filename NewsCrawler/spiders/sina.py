@@ -1,8 +1,9 @@
 # coding=gbk
-import scrapy
+from json import loads
 from re import match, findall
 from time import time
-from json import loads
+
+import scrapy
 from requests import get
 
 from NewsCrawler.items import NewsItem

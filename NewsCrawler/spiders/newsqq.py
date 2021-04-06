@@ -1,6 +1,8 @@
-import scrapy
 import json
+
 import requests
+import scrapy
+
 from ..items import NewsItem
 from ..utils.validate_published import validate_replace
 

@@ -1,21 +1,21 @@
 package main
 
 import (
-	"api/config"
-	"api/handlers"
 	"context"
 	"fmt"
 
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/labstack/echo/v4"
+
+	"api/config"
+	"api/handlers"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var (
-	e = echo.New()
-
+	e       = echo.New()
 	newsDB  *mongo.Database
 	newsCol *mongo.Collection
 	cfg     config.Properties
@@ -33,7 +33,6 @@ func init() {
 	}
 	newsDB = c.Database(cfg.NewsDatabase)
 	newsCol = newsDB.Collection(cfg.NewsCollection)
-
 }
 func main() {
 

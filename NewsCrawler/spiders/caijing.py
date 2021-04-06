@@ -1,7 +1,9 @@
-import scrapy
-from random import random
 from json import loads
+from random import random
+
+import scrapy
 from requests import get
+
 from NewsCrawler.items import NewsItem
 from NewsCrawler.utils.validate_published import validate_replace
 

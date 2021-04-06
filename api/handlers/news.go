@@ -67,26 +67,30 @@ func (nh *NewsHandler) GetNews(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, response.JsonResp{
 		Status: 1,
-		Data: news,
+		Data:   news,
 	})
 }
+
 //todo
 func (nh *NewsHandler) GetNew(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response.JsonResp{
-		Status: 1,
-		Data: 12,
+		Status:  1,
+		Data:    12,
 		Message: "success to query a news!",
 	})
 }
+
 //todo
 func (nh *NewsHandler) CreateNews(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
 }
+
 //todo
 func (nh *NewsHandler) ModifyNews(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
 }
+
 //todo
 func (nh *NewsHandler) DeleteNews(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")

@@ -1,9 +1,10 @@
-import scrapy
-from random import random
-from requests import get
-from time import time
-from re import match
 from json import loads
+from random import random
+from re import match
+from time import time
+
+import scrapy
+from requests import get
 
 from NewsCrawler.items import NewsItem
 from NewsCrawler.utils.call_nav_map import nav_map

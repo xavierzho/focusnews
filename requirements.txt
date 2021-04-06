@@ -7,3 +7,4 @@ Twisted==20.3.0
 celery==5.0.5
 lxml==4.6.2
 scrapy_redis==0.6.8
+dateutil == 2.8.1

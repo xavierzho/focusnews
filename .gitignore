@@ -1,1 +1,3 @@
 /.idea/
+
+celerybeat-schedule.*
