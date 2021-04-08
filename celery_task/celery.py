@@ -2,11 +2,13 @@
 @Author: Jonescyna@gmail.com
 @Created: 2020/12/23
 """
+import os
+
 import celery
 from celery.schedules import crontab
 
-backend = 'redis://127.0.0.1:6379/0'
-broker = 'redis://127.0.0.1:6379/0'
+backend = os.getenv("redisURI") + "/0"
+broker = os.getenv("redisURI") + "/0"
 app = celery.Celery(__name__, backend=backend, broker=broker, include=[])
 
 # 时区
