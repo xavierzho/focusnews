@@ -6,6 +6,7 @@
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import os
 import random
 
 BOT_NAME = 'NewsCrawler'
@@ -93,10 +94,10 @@ ITEM_PIPELINES = {
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 
-MONGO_URL = 'mongodb://localhost:27017'
+MONGO_URL = os.getenv("mongoURI")
 MONGO_DB = 'news'
 
 DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 SCHEDULER = 'scrapy_redis.scheduler.Scheduler'
 SCHEDULER_PERSIST = True
-REDIS_URL = 'redis://redis:jones1997@127.0.0.1:6379/2'
+REDIS_URL = os.getenv("redisURI") + "/2"

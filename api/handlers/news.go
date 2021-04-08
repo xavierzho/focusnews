@@ -48,13 +48,13 @@ func findNews(ctx context.Context, query url.Values, collection dbinterface.Coll
 	for k, v := range query {
 		filter[k] = v[0]
 	}
-	// 调用CollectionAPI
+	// 调用CollectionAPI接口
 	cursor, err := collection.Find(ctx, bson.M(filter))
 	if err != nil {
 		log.Errorf("Unable to find the news :%+v", err)
 	}
-	err = cursor.All(ctx, &news)
-	if err != nil {
+
+	if err := cursor.All(ctx, &news); err != nil {
 		log.Errorf("Unable to read the cursor :%+v", err)
 		return news, echo.NewHTTPError(http.StatusInternalServerError, "Unable to read the cursor")
 	}
