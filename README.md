@@ -1,4 +1,8 @@
 # Some crawler of news platform on china
+[![License](https://img.shields.io/badge/Build-Passing-brightgre)](https://github.com/Jonescy/focusnews)
+[![License](https://img.shields.io/badge/Python->=3.6-yellow)](https://github.com/pypa/pipenv)
+[![License](https://img.shields.io/badge/GoLand-@1.16-blue)](https://github.com/golang/go)
+[![License](https://img.shields.io/badge/LICENSE-MIT-brightgreen)](https://raw.githubusercontent.com/Jonescy/focusnews/master/LICENSE)
 
 ## Override
 
