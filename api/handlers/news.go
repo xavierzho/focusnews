@@ -26,6 +26,7 @@ var (
 	v = validator.New()
 )
 
+// News Abstract the news
 type News struct {
 	ID        primitive.ObjectID `json:"_id,omitempty" bson:"_id"`
 	Title     string             `json:"title" bson:"title" validate:"required,max=256"`
@@ -38,16 +39,23 @@ type News struct {
 	NewsID    interface{}        `json:"news_id" bson:"news_id"`
 	Images    interface{}        `json:"images" bson:"images"`
 }
+
+// NewsHandler Api bind method
 type NewsHandler struct {
 	Col dbinterface.CollectionAPI
 }
+
+// NewsValidator validator bind method
 type NewsValidator struct {
 	validator *validator.Validate
 }
 
+// Validate Validate upload data
 func (nv *NewsValidator) Validate(i interface{}) error {
 	return nv.validator.Struct(i)
 }
+
+// findManyNews Find the news real method in db
 func findManyNews(ctx context.Context, query url.Values, collection dbinterface.CollectionAPI) ([]News, error) {
 	var (
 		news []News
@@ -86,7 +94,9 @@ func findManyNews(ctx context.Context, query url.Values, collection dbinterface.
 	}
 	return news, nil
 }
-func (nh *NewsHandler) GetNews(c echo.Context) error {
+
+// GetNews get one news API
+func (nh *NewsHandler) GetNewsS(c echo.Context) error {
 	news, err := findManyNews(context.Background(), c.QueryParams(), nh.Col)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Unable to find news list")
@@ -97,6 +107,7 @@ func (nh *NewsHandler) GetNews(c echo.Context) error {
 	})
 }
 
+//findOneNews Find the news real method in db
 func findOneNews(ctx context.Context, query string, collection dbinterface.CollectionAPI) (News, error) {
 	var news News
 	docId, err := primitive.ObjectIDFromHex(query)
@@ -111,7 +122,8 @@ func findOneNews(ctx context.Context, query string, collection dbinterface.Colle
 	return news, nil
 }
 
-func (nh *NewsHandler) GetNew(c echo.Context) error {
+// GetNews get one news
+func (nh *NewsHandler) GetNews(c echo.Context) error {
 	news, err := findOneNews(context.Background(), c.Param("id"), nh.Col)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Unable to find news")
@@ -122,6 +134,8 @@ func (nh *NewsHandler) GetNew(c echo.Context) error {
 		Message: "success to query a news!",
 	})
 }
+
+// insertNews create news real method in db
 func insertNews(ctx context.Context, newsList []News, collection dbinterface.CollectionAPI) ([]interface{}, error) {
 	var insertIds []interface{}
 	var exists News
@@ -141,6 +155,7 @@ func insertNews(ctx context.Context, newsList []News, collection dbinterface.Col
 	return insertIds, nil
 }
 
+// CreateNews create news api
 func (nh *NewsHandler) CreateNews(c echo.Context) error {
 	var newsList []News
 	c.Echo().Validator = &NewsValidator{v}
@@ -165,6 +180,7 @@ func (nh *NewsHandler) CreateNews(c echo.Context) error {
 	})
 }
 
+// updateNews update news real method
 func updateNews(ctx context.Context, id string, reqBody io.ReadCloser, collection dbinterface.CollectionAPI) (News, error) {
 	var news News
 	//find news exists in db
@@ -193,6 +209,8 @@ func updateNews(ctx context.Context, id string, reqBody io.ReadCloser, collectio
 	}
 	return news, nil
 }
+
+// ModifyNews update news api
 func (nh *NewsHandler) ModifyNews(c echo.Context) error {
 	news, err := updateNews(context.Background(), c.Param("id"), c.Request().Body, nh.Col)
 	if err != nil {
@@ -204,6 +222,8 @@ func (nh *NewsHandler) ModifyNews(c echo.Context) error {
 		Message: "Success to update News",
 	})
 }
+
+// deleteNews delete news real method
 func deleteNews(ctx context.Context, id string, collection dbinterface.CollectionAPI) (int64, error) {
 	var news News
 	//find the news exists in db
@@ -223,6 +243,8 @@ func deleteNews(ctx context.Context, id string, collection dbinterface.Collectio
 	}
 	return delRes.DeletedCount, nil
 }
+
+// DeleteNews delete news api
 func (nh *NewsHandler) DeleteNews(c echo.Context) error {
 	delCount, err := deleteNews(context.Background(), c.Param("id"), nh.Col)
 	if err != nil {

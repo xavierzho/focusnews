@@ -39,8 +39,8 @@ func main() {
 
 	nh := &handlers.NewsHandler{Col: newsCol}
 	// news routers
-	e.GET("/news", nh.GetNews)
-	e.GET("/news/:id", nh.GetNew)
+	e.GET("/news", nh.GetNewsS)
+	e.GET("/news/:id", nh.GetNews)
 	e.POST("/news", nh.CreateNews)
 	e.PUT("/news/:id", nh.ModifyNews)
 	e.DELETE("/news/:id", nh.DeleteNews)
