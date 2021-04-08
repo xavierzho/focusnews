@@ -50,7 +50,8 @@ func (nv *NewsValidator) Validate(i interface{}) error {
 }
 func findManyNews(ctx context.Context, query url.Values, collection dbinterface.CollectionAPI) ([]News, error) {
 	var (
-		news  []News
+		news []News
+		//Note:Not declared in the loop!!
 		limit int64 = 20
 		skip  int64 = 0
 		sort  int64 = -1
@@ -62,7 +63,6 @@ func findManyNews(ctx context.Context, query url.Values, collection dbinterface.
 		// check the params
 		filter[key] = val[0]
 		tmp, _ = strconv.Atoi(val[0])
-
 		switch filter[key] {
 		case "skip":
 			skip = int64(tmp)
