@@ -1,4 +1,4 @@
-# Define here the models for your spider middleware
+# Define here the models for your spider middlewares
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
@@ -12,7 +12,7 @@ from itemadapter import is_item, ItemAdapter
 
 class NewscrawlerSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
-    # scrapy acts as if the spider middleware does not modify the
+    # scrapy acts as if the spider middlewares does not modify the
     # passed objects.
 
     @classmethod
@@ -24,7 +24,7 @@ class NewscrawlerSpiderMiddleware:
 
     def process_spider_input(self, response, spider):
         # Called for each response that goes through the spider
-        # middleware and into the spider.
+        # middlewares and into the spider.
 
         # Should return None or raise an exception.
         return None
@@ -39,7 +39,7 @@ class NewscrawlerSpiderMiddleware:
 
     def process_spider_exception(self, response, exception, spider):
         # Called when a spider or process_spider_input() method
-        # (from other spider middleware) raises an exception.
+        # (from other spider middlewares) raises an exception.
 
         # Should return either None or an iterable of Request or item objects.
         pass
@@ -59,7 +59,7 @@ class NewscrawlerSpiderMiddleware:
 
 class NewscrawlerDownloaderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
-    # scrapy acts as if the downloader middleware does not modify the
+    # scrapy acts as if the downloader middlewares does not modify the
     # passed objects.
     def __init__(self, delay):
         self.delay = delay
@@ -73,14 +73,14 @@ class NewscrawlerDownloaderMiddleware:
 
     def process_request(self, request, spider):
         # Called for each request that goes through the downloader
-        # middleware.
+        # middlewares.
 
         # Must either:
         # - return None: continue processing this request
         # - or return a Response object
         # - or return a Request object
         # - or raise IgnoreRequest: process_exception() methods of
-        #   installed downloader middleware will be called
+        #   installed downloader middlewares will be called
         rand_ua = choice(USER_AGENT_LIST)
         if rand_ua:
             request.headers.setdefault('User-Agent', rand_ua)
@@ -96,7 +96,7 @@ class NewscrawlerDownloaderMiddleware:
 
     def process_exception(self, request, exception, spider):
         # Called when a download handler or a process_request()
-        # (from other downloader middleware) raises an exception.
+        # (from other downloader middlewares) raises an exception.
 
         # Must either:
         # - return None: continue processing this exception

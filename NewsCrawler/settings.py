@@ -95,7 +95,7 @@ ITEM_PIPELINES = {
 
 
 MONGO_URL = os.getenv("mongoURI")
-MONGO_DB = 'news'
+MONGO_DB = 'focus'
 
 DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 SCHEDULER = 'scrapy_redis.scheduler.Scheduler'
