@@ -1,0 +1,137 @@
+[
+  {
+    "method": "TRACE",
+    "path": "auth",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "REPORT",
+    "path": "auth/*",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "HEAD",
+    "path": "auth",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "GET",
+    "path": "auth/*",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "PATCH",
+    "path": "auth/*",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "PUT",
+    "path": "auth/*",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "DELETE",
+    "path": "auth",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "OPTIONS",
+    "path": "auth",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "CONNECT",
+    "path": "auth/*",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "POST",
+    "path": "auth/news",
+    "name": "createNews"
+  },
+  {
+    "method": "GET",
+    "path": "/news/:id",
+    "name": "oneNews"
+  },
+  {
+    "method": "POST",
+    "path": "auth/*",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "PUT",
+    "path": "auth/news/:id",
+    "name": "updateNews"
+  },
+  {
+    "method": "GET",
+    "path": "auth",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "POST",
+    "path": "auth",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "DELETE",
+    "path": "auth/*",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "PROPFIND",
+    "path": "auth/*",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "PATCH",
+    "path": "auth",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "PUT",
+    "path": "auth",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "HEAD",
+    "path": "auth/*",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "DELETE",
+    "path": "auth/news/:id",
+    "name": "deleteNews"
+  },
+  {
+    "method": "GET",
+    "path": "/news",
+    "name": "manyNews"
+  },
+  {
+    "method": "PROPFIND",
+    "path": "auth",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "REPORT",
+    "path": "auth",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "OPTIONS",
+    "path": "auth/*",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "TRACE",
+    "path": "auth/*",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  },
+  {
+    "method": "CONNECT",
+    "path": "auth",
+    "name": "github.com/labstack/echo/v4.glob..func1"
+  }
+]

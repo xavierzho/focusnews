@@ -1,8 +1,6 @@
-package handlers
+package routers
 
 import (
-	"api/dbinterface"
-	"api/response"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -11,38 +9,33 @@ import (
 	"net/url"
 	"strconv"
 
-	"go.mongodb.org/mongo-driver/mongo/options"
-
-	"github.com/labstack/gommon/log"
-
-	"gopkg.in/go-playground/validator.v9"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 var (
-	v = validator.New()
+	v       = validator.New()
+	colName = "summary"
 )
 
 // News Abstract the news
 type News struct {
-	ID        primitive.ObjectID `json:"_id,omitempty" bson:"_id"`
-	Title     string             `json:"title" bson:"title" validate:"required,max=256"`
-	Published string             `json:"published" bson:"published" validate:"required"`
-	Source    string             `json:"source" bson:"source" validate:"required"`
-	Content   interface{}        `json:"content" bson:"content"`
-	Link      string             `json:"link" bson:"link" validate:"required,url"`
-	NavLink   interface{}        `json:"nav_link" bson:"nav_link" validate:"url"`
-	NavName   interface{}        `json:"nav_name" bson:"nav_name"`
-	NewsID    interface{}        `json:"news_id" bson:"news_id"`
-	Images    interface{}        `json:"images" bson:"images"`
-}
-
-// NewsHandler Api bind method
-type NewsHandler struct {
-	Col dbinterface.CollectionAPI
+	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id"`
+	Title     string             `json:"title,omitempty" bson:"title" validate:"required,max=256"`
+	Published string             `json:"published,omitempty" bson:"published" validate:"required"`
+	Source    string             `json:"source,omitempty" bson:"source" validate:"required"`
+	Content   interface{}        `json:"content,omitempty" bson:"content"`
+	Link      string             `json:"link,omitempty" bson:"link" validate:"required,url"`
+	NavLink   interface{}        `json:"nav_link,omitempty" bson:"nav_link" validate:"url"`
+	NavName   interface{}        `json:"nav_name,omitempty" bson:"nav_name"`
+	NewsID    interface{}        `json:"news_id,omitempty" bson:"news_id"`
+	Images    interface{}        `json:"images,omitempty" bson:"images"`
 }
 
 // NewsValidator validator bind method
@@ -56,59 +49,54 @@ func (nv *NewsValidator) Validate(i interface{}) error {
 }
 
 // findManyNews Find the news real method in db
-func findManyNews(ctx context.Context, query url.Values, collection dbinterface.CollectionAPI) ([]News, error) {
+func findManyNews(ctx context.Context, query url.Values, collection *mongo.Collection) ([]News, error) {
 	var (
-		news []News
+		newsList []News
 		//Note:Not declared in the loop!!
 		limit int64 = 20
 		skip  int64 = 0
 		sort  int64 = -1
-		tmp   int
 	)
 	fmt.Println(query)
-	filter := make(map[string]interface{})
-	for key, val := range query {
-		// check the params
-		filter[key] = val[0]
-		tmp, _ = strconv.Atoi(val[0])
-		switch filter[key] {
-		case "skip":
-			skip = int64(tmp)
-		case "limit":
-			limit = int64(tmp)
-		case "sort":
-			sort = int64(tmp)
-		}
+	limit, err := strconv.ParseInt(query.Get("limit"), 10, 64)
+	skip, err = strconv.ParseInt(query.Get("skip"), 10, 64)
+	sort, err = strconv.ParseInt(query.Get("limit"), 10, 64)
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Params is no Number")
 	}
 
+	//fmt.Println("filter:", filter)
 	// 调用CollectionAPI接口
 	opts := options.Find().SetSort(bson.M{"published": sort}).SetLimit(limit).SetSkip(skip).SetMax(100)
-	cursor, err := collection.Find(ctx, bson.M(filter), opts)
+	cursor, err := collection.Find(ctx, bson.D{}, opts)
 	if err != nil {
-		log.Errorf("Unable to find the news :%+v", err)
+		log.Errorf("Unable to find the news :\"%+v\"", err)
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Unable to find the news")
 	}
 
-	if err := cursor.All(ctx, &news); err != nil {
+	if err := cursor.All(ctx, &newsList); err != nil {
 		log.Errorf("Unable to read the cursor :%+v", err)
-		return news, echo.NewHTTPError(http.StatusInternalServerError, "Unable to read the cursor")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Unable to read the cursor")
 	}
-	return news, nil
+	defer cursor.Close(ctx)
+	return newsList, nil
 }
 
 // GetNewsS get one news API
-func (nh *NewsHandler) GetNewsS(c echo.Context) error {
-	news, err := findManyNews(context.Background(), c.QueryParams(), nh.Col)
+func (nh *DBHandler) GetNewsS(c echo.Context) error {
+	col := nh.Mongodb.Collection(colName)
+	news, err := findManyNews(context.Background(), c.QueryParams(), col)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Unable to find news list")
 	}
-	return c.JSON(http.StatusOK, response.JsonResp{
+	return c.JSON(http.StatusOK, Response{
 		Status: 1,
 		Data:   news,
 	})
 }
 
 //findOneNews Find the news real method in db
-func findOneNews(ctx context.Context, query string, collection dbinterface.CollectionAPI) (News, error) {
+func findOneNews(ctx context.Context, query string, collection *mongo.Collection) (News, error) {
 	var news News
 	docId, err := primitive.ObjectIDFromHex(query)
 	if err != nil {
@@ -123,12 +111,13 @@ func findOneNews(ctx context.Context, query string, collection dbinterface.Colle
 }
 
 // GetNews get one news
-func (nh *NewsHandler) GetNews(c echo.Context) error {
-	news, err := findOneNews(context.Background(), c.Param("id"), nh.Col)
+func (nh *DBHandler) GetNews(c echo.Context) error {
+	col := nh.Mongodb.Collection(colName)
+	news, err := findOneNews(context.Background(), c.Param("id"), col)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Unable to find news")
 	}
-	return c.JSON(http.StatusOK, response.JsonResp{
+	return c.JSON(http.StatusOK, Response{
 		Status:  1,
 		Data:    news,
 		Message: "success to query a news!",
@@ -136,7 +125,7 @@ func (nh *NewsHandler) GetNews(c echo.Context) error {
 }
 
 // insertNews create news real method in db
-func insertNews(ctx context.Context, newsList []News, collection dbinterface.CollectionAPI) ([]interface{}, error) {
+func insertNews(ctx context.Context, newsList []News, collection CollectionAPI) ([]interface{}, error) {
 	var insertIds []interface{}
 	var exists News
 	for _, news := range newsList {
@@ -145,7 +134,7 @@ func insertNews(ctx context.Context, newsList []News, collection dbinterface.Col
 		if err := res.Decode(&exists); err == nil {
 			return nil, echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Title:%s is exists", exists.Title))
 		}
-		news.NewsID = primitive.NewObjectID()
+		news.ID = primitive.NewObjectID()
 		insertId, err := collection.InsertOne(ctx, news)
 		if err != nil {
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Has something error with:%#v", news))
@@ -156,7 +145,7 @@ func insertNews(ctx context.Context, newsList []News, collection dbinterface.Col
 }
 
 // CreateNews create news api
-func (nh *NewsHandler) CreateNews(c echo.Context) error {
+func (nh *DBHandler) CreateNews(c echo.Context) error {
 	var newsList []News
 	c.Echo().Validator = &NewsValidator{v}
 	if err := c.Bind(&newsList); err != nil {
@@ -169,11 +158,12 @@ func (nh *NewsHandler) CreateNews(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusBadRequest, "Unable to validate request payload")
 		}
 	}
-	IDs, err := insertNews(context.Background(), newsList, nh.Col)
+	col := nh.Mongodb.Collection(colName)
+	IDs, err := insertNews(context.Background(), newsList, col)
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, response.JsonResp{
+	return c.JSON(http.StatusOK, Response{
 		Status:  1,
 		Data:    IDs,
 		Message: fmt.Sprintf("Success insert %d News", len(IDs)),
@@ -181,7 +171,7 @@ func (nh *NewsHandler) CreateNews(c echo.Context) error {
 }
 
 // updateNews update news real method
-func updateNews(ctx context.Context, id string, reqBody io.ReadCloser, collection dbinterface.CollectionAPI) (News, error) {
+func updateNews(ctx context.Context, id string, reqBody io.ReadCloser, collection CollectionAPI) (News, error) {
 	var news News
 	//find news exists in db
 	docID, err := primitive.ObjectIDFromHex(id)
@@ -211,12 +201,13 @@ func updateNews(ctx context.Context, id string, reqBody io.ReadCloser, collectio
 }
 
 // ModifyNews update news api
-func (nh *NewsHandler) ModifyNews(c echo.Context) error {
-	news, err := updateNews(context.Background(), c.Param("id"), c.Request().Body, nh.Col)
+func (nh *DBHandler) ModifyNews(c echo.Context) error {
+	col := nh.Mongodb.Collection(colName)
+	news, err := updateNews(context.Background(), c.Param("id"), c.Request().Body, col)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Unable to modify the news")
 	}
-	return c.JSON(http.StatusOK, response.JsonResp{
+	return c.JSON(http.StatusOK, Response{
 		Status:  1,
 		Data:    news,
 		Message: "Success to update News",
@@ -224,7 +215,7 @@ func (nh *NewsHandler) ModifyNews(c echo.Context) error {
 }
 
 // deleteNews delete news real method
-func deleteNews(ctx context.Context, id string, collection dbinterface.CollectionAPI) (int64, error) {
+func deleteNews(ctx context.Context, id string, collection CollectionAPI) (int64, error) {
 	var news News
 	//find the news exists in db
 	docID, err := primitive.ObjectIDFromHex(id)
@@ -245,12 +236,13 @@ func deleteNews(ctx context.Context, id string, collection dbinterface.Collectio
 }
 
 // DeleteNews delete news api
-func (nh *NewsHandler) DeleteNews(c echo.Context) error {
-	delCount, err := deleteNews(context.Background(), c.Param("id"), nh.Col)
+func (nh *DBHandler) DeleteNews(c echo.Context) error {
+	col := nh.Mongodb.Collection(colName)
+	delCount, err := deleteNews(context.Background(), c.Param("id"), col)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Unable to delete the news")
 	}
-	return c.JSON(http.StatusOK, response.JsonResp{
+	return c.JSON(http.StatusOK, Response{
 		Status:  1,
 		Message: fmt.Sprintf("Delete %d news", delCount),
 	})

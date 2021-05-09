@@ -39,12 +39,12 @@ func main() {
 
 	nh := &handlers.NewsHandler{Col: newsCol}
 	// news routers
-	e.GET("/news", nh.GetNewsS)
-	e.GET("/news/:id", nh.GetNews)
-	e.POST("/news", nh.CreateNews)
-	e.PUT("/news/:id", nh.ModifyNews)
-	e.DELETE("/news/:id", nh.DeleteNews)
-	//middleware
+	e.GET("/api/news", nh.GetNewsS)
+	e.GET("/api/news/:id", nh.GetNews)
+	e.POST("/api/news", nh.CreateNews)
+	e.PUT("/api/news/:id", nh.ModifyNews)
+	e.DELETE("/api/news/:id", nh.DeleteNews)
+	//middlewares
 
 	// server start
 	e.Logger.Fatal(e.Start(fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)))
