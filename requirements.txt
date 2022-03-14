@@ -3,7 +3,7 @@ requests==2.25.1
 demjson==2.2.4
 pymongo==3.4.0
 pyOpenSSL==20.0.1
-Twisted==22.1.0
+Twisted==22.2.0
 celery>=5.2.2
 lxml>=4.6.5
 scrapy_redis==0.6.8
