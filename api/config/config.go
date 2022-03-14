@@ -1,6 +1,6 @@
 package config
 
-// ConfigDatabase ...
+// Properties ...
 type Properties struct {
 	Port           string `env:"NEWS_PORT" env-default:"5200"`
 	Host           string `env:"NEWS_HOST" env-default:"localhost"`

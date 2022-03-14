@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"syscall"
+	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/labstack/echo/v4"
@@ -44,6 +45,11 @@ func init() {
 }
 
 func server() {
+	s.Addr = fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)
+	s.Handler = e
+	s.ReadHeaderTimeout = 10 * time.Second
+	s.WriteTimeout = 10 * time.Second
+	s.MaxHeaderBytes = 1 << 20
 	nh := &handlers.NewsHandler{Col: newsCol}
 	// news routers
 	e.GET("/news", nh.GetNewsS)
@@ -54,7 +60,7 @@ func server() {
 	//middleware
 
 	// server start
-	e.Logger.Fatal(e.Start(fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)))
+	s.ListenAndServe()
 }
 func main() {
 	os.Args[0], _ = filepath.Abs(os.Args[0])
@@ -64,9 +70,9 @@ func main() {
 
 	flag.Parse()
 	dmn := &daemon.Context{
-		PidFileName: "./log/pinksale.pid",
+		PidFileName: "./log/focusnews.pid",
 		PidFilePerm: 0644,
-		LogFileName: "./log/pinksale.log",
+		LogFileName: "./log/focusnews.log",
 		LogFilePerm: 0640,
 		WorkDir:     "/",
 		Umask:       027,
