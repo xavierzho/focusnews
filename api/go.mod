@@ -1,4 +1,4 @@
-module api
+module github.com/foucusnews
 
 go 1.15
 

@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"api/dbinterface"
-	"api/response"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,6 +8,9 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"github.com/foucusnews/dbinterface"
+	"github.com/foucusnews/response"
 
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -95,7 +96,7 @@ func findManyNews(ctx context.Context, query url.Values, collection dbinterface.
 	return news, nil
 }
 
-// GetNews get one news API
+// GetNewsS get one news API
 func (nh *NewsHandler) GetNewsS(c echo.Context) error {
 	news, err := findManyNews(context.Background(), c.QueryParams(), nh.Col)
 	if err != nil {

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"api/config"
-	"api/handlers"
 	"context"
 	"flag"
 	"fmt"
@@ -12,6 +10,9 @@ import (
 	"path/filepath"
 	"syscall"
 	"time"
+
+	"github.com/foucusnews/config"
+	"github.com/foucusnews/handlers"
 
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/labstack/echo/v4"
