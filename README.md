@@ -21,3 +21,9 @@
 2. Using celery to timed run
 3. Using Mongodb storage,redis deduplication request URL
 4. Has data cleanup script
+
+## build 
+### api 
+```shell
+go build -o api api/api.go
+```
